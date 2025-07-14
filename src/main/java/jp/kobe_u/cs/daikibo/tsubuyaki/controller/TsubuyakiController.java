@@ -3,41 +3,54 @@ package jp.kobe_u.cs.daikibo.tsubuyaki.controller;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam; // ★追加
 
 import jp.kobe_u.cs.daikibo.tsubuyaki.entity.Tsubuyaki;
 import jp.kobe_u.cs.daikibo.tsubuyaki.service.TsubuyakiService;
-
-import org.springframework.ui.Model;
 
 @Controller
 public class TsubuyakiController {
     @Autowired
     TsubuyakiService ts;
-    //タイトル画面を表示
+
+    // タイトル画面を表示
     @GetMapping("/")
     String showIndex() {
         return "index";
     }
-    //メイン画面を表示
+
+    /**
+     * ★修正: メイン画面の表示。検索機能を追加
+     * @param keyword (オプショナル) 検索キーワード
+     * @param model
+     * @return
+     */
     @GetMapping("/read")
-    String showTsubuyakiList(Model model) {
-        List<Tsubuyaki> list = ts.getAllTsubuyaki(); //全つぶやきを取得
-        model.addAttribute("tsubuyakiList", list);   //モデル属性にリストをセット
-        model.addAttribute("tsubuyakiForm", new Tsubuyaki());  //空フォームをセット
-        return "tsubuyaki_list"; //リスト画面を返す
+    String showTsubuyakiList(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
+        List<Tsubuyaki> list;
+        // keywordが指定されていれば検索、なければ全件取得
+        if (keyword != null && !keyword.isEmpty()) {
+            list = ts.searchTsubuyaki(keyword);
+            model.addAttribute("keyword", keyword); // 検索キーワードをモデルに追加
+        } else {
+            list = ts.getAllTsubuyaki();
+        }
+
+        model.addAttribute("tsubuyakiList", list);
+        model.addAttribute("tsubuyakiForm", new Tsubuyaki());
+        return "tsubuyaki_list";
     }
+
     //つぶやきを投稿
     @PostMapping("/read")
     String postTsubuyaki(@ModelAttribute("tsubuyakiForm") Tsubuyaki form, Model model) {
-        //フォームからエンティティに移し替え
-        Tsubuyaki t = new Tsubuyaki();
-        t.setName(form.getName());
-        t.setComment(form.getComment());
-        //サービスに投稿処理を依頼
-        ts.postTsubuyaki(t);
-        return "redirect:/read"; //メイン画面に転送
+        // TsubuyakiFormからTsubuyakiエンティティへの移し替えは不要になりました
+        // ※TsubuyakiFormが不要なため
+        ts.postTsubuyaki(form);
+        return "redirect:/read";
     }
 }

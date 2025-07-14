@@ -2,24 +2,51 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>みんなのつぶやき</title>
+    <title>つぶやき</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <h1>みんなのつぶやき</h1>
-    <ul>
-        <li th:each="t: ${tsubuyakiList}">
-            [[${t.comment}]] -- [[${t.name}]] on [[${t.createdAt}]]
-        </li>
-    </ul>
-    <h2>投稿する</h2>
-    <form th:action="@{/read}" th:object="${tsubuyakiForm}" method="post">
-        <label for="name">お名前：</label>
-        <input type="text" th:field="*{name}" size="8" value="名無しさん" />
-        <label for="comment">つぶやき：</label>
-        <input type="text" required th:field="*{comment}" />
-        <input type="submit" value="つぶやく" />
-    </form>
-    <h2>タイトルへ</h2>
-    <a th:href="@{/}">戻る</a>
+    <h1>つぶやきアプリ</h1>
+
+    <div class="search-form">
+        <form th:action="@{/read}" method="get">
+            <input type="text" name="keyword" placeholder="コメントを検索">
+            <button type="submit">検索</button>
+        </form>
+        <a th:href="@{/read}">全件表示に戻る</a>
+    </div>
+
+    <hr>
+
+    <div class="post-form">
+        <h2>新しいつぶやきを投稿</h2>
+        <form th:action="@{/read}" th:object="${tsubuyakiForm}" method="post">
+            <div>
+                <label>名前:</label>
+                <input type="text" th:field="*{name}" placeholder="名無しさん">
+            </div>
+            <div>
+                <label>コメント:</label>
+                <textarea th:field="*{comment}" rows="4" cols="50" required></textarea>
+            </div>
+            <div>
+                <button type="submit">投稿</button>
+            </div>
+        </form>
+    </div>
+
+    <hr>
+    
+    <h2 th:if="${keyword}">「<span th:text="${keyword}"></span>」の検索結果</h2>
+    <h2 th:unless="${keyword}">すべてのつぶやき</h2>
+
+    <div class="tsubuyaki-list">
+        <div th:each="t : ${tsubuyakiList}" class="tsubuyaki-item">
+            <p><strong>ID:</strong> <span th:text="${t.id}"></span></p>
+            <p><strong>名前:</strong> <span th:text="${t.name}"></span></p>
+            <p><strong>コメント:</strong> <span th:text="${t.comment}"></span></p>
+            <p><strong>投稿日時:</strong> <span th:text="${#temporals.format(t.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+        </div>
+    </div>
 </body>
 </html>
